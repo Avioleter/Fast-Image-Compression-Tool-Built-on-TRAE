@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片压缩工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        /* 背景效果 */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(106, 13, 173, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(106, 13, 173, 0.1) 1px, transparent 1px),
+                #121212;
+            background-size: 50px 50px;
+            background-position: center center;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 50px 50px;
+            }
+        }
+        
+        /* 开发者信息 */
+        .footer {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
+            border-top: 1px solid rgba(106, 13, 173, 0.3);
+            padding: 40px 0;
+            margin-top: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.8), transparent);
+            animation: pulse 2s infinite;
+        }
+        
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            color: #ffd700;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+        
+        .footer-content p {
+            margin: 10px 0;
+            position: relative;
+            display: inline-block;
+            margin: 0 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .footer-content p {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+        
+        /* 装饰元素 */
+        .decorations {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .decor {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .decor.left {
+            left: 20px;
+        }
+        
+        .decor.right {
+            right: 20px;
+        }
+        
+        .decor-item {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6a0dad 0%, #8a2be2 100%);
+            box-shadow: 0 0 15px rgba(106, 13, 173, 0.8);
+            animation: float 3s ease-in-out infinite;
+            opacity: 0.7;
+        }
+        
+        .decor-item:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .decor-item:nth-child(2) {
+            animation-delay: 1s;
+        }
+        
+        .decor-item:nth-child(3) {
+            animation-delay: 2s;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-20px) scale(1.2);
+                opacity: 1;
+                box-shadow: 0 0 25px rgba(106, 13, 173, 1);
+            }
+        }
+        
+        /* 响应式设计 - 装饰元素 */
+        @media (max-width: 1024px) {
+            .decor {
+                gap: 30px;
+            }
+            
+            .decor-item {
+                width: 15px;
+                height: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .decor {
+                display: none;
+            }
+        }
+        
+        /* 头部区域 */
+        .header {
+            padding: 80px 0;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(106, 13, 173, 0.15) 0%, rgba(138, 43, 226, 0.15) 100%);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 头部装饰效果 */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.8), transparent);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* 头部标题 */
+        .header h1 {
+            font-size: 4.5rem;
+            margin: 0;
+            color: #ffd700;
+            letter-spacing: 4px;
+            font-weight: bold;
+            position: relative;
+            display: inline-block;
+            background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGradient 3s linear infinite;
+        }
+        
+        @keyframes titleGradient {
+            0% {
+                background-position: 0% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* 头部副标题 */
+        .header p {
+            font-size: 1.4rem;
+            margin-top: 25px;
+            color: rgba(255, 255, 255, 0.9);
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 10px rgba(142, 68, 173, 0.5);
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+        
+        /* 垂直布局的主内容 */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            min-height: auto;
+        }
+        
+        /* 上传区域 */
+        .upload-section {
+            width: 100%;
+            max-width: 600px;
+            padding: 60px 45px;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(30, 30, 30, 0.8) 100%);
+            border-radius: 20px;
+            box-shadow: 
+                0 4px 30px rgba(142, 68, 173, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .upload-section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 45px;
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        /* 上传按钮 */
+        .upload-label {
+            display: inline-block;
+            padding: 22px 45px;
+            background: linear-gradient(135deg, #6a0dad 0%, #8a2be2 100%);
+            color: #ffd700;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 19px;
+            transition: all 0.4s ease;
+            border: 2px solid #ffd700;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 0 20px rgba(106, 13, 173, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .upload-label:hover {
+            background: linear-gradient(135deg, #8a2be2 0%, #9932cc 100%);
+            transform: translateY(-3px);
+            border-color: #ffed4e;
+            box-shadow: 
+                0 0 35px rgba(106, 13, 173, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        
+        .upload-label span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        /* 控制区域 */
+        .controls-section {
+            width: 100%;
+            max-width: 800px;
+            padding: 45px;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(30, 30, 30, 0.8) 100%);
+            border-radius: 20px;
+            box-shadow: 
+                0 4px 30px rgba(142, 68, 173, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+            pointer-events: none;
+        }
+        
+        /* 控制区域显示状态 */
+        .controls-section.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        
+        .controls-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls-section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 45px;
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        /* 质量控制 */
+        .quality-control {
+            margin-bottom: 50px;
+            text-align: center;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+        
+        .quality-control label {
+            display: block;
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #ffd700;
+            font-size: 1.3rem;
+        }
+        
+        /* 自定义滑块 */
+        .quality-control input {
+            width: 100%;
+            max-width: 350px;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, #333 0%, #6a0dad 100%);
+            outline: none;
+            border-radius: 5px;
+            box-shadow: 
+                inset 0 1px 3px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        /* 滑块拇指 */
+        .quality-control input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #6a0dad 0%, #8a2be2 100%);
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quality-control input::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(106, 13, 173, 0.8);
+        }
+        
+        .quality-control input::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #6a0dad 0%, #8a2be2 100%);
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        /* 压缩按钮 */
+        #compressBtn {
+            width: 100%;
+            padding: 22px;
+            background: linear-gradient(135deg, #6a0dad 0%, #8a2be2 100%);
+            color: #ffd700;
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 19px;
+            font-weight: bold;
+            transition: all 0.4s ease;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 0 20px rgba(106, 13, 173, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        #compressBtn:hover {
+            background: linear-gradient(135deg, #8a2be2 0%, #9932cc 100%);
+            transform: translateY(-3px);
+            border-color: #ffed4e;
+            box-shadow: 
+                0 0 35px rgba(106, 13, 173, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        
+        #compressBtn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 预览和下载区域 */
+        .preview-section {
+            width: 100%;
+            max-width: 900px;
+            padding: 45px;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(30, 30, 30, 0.8) 100%);
+            border-radius: 20px;
+            box-shadow: 
+                0 4px 30px rgba(142, 68, 173, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+            pointer-events: none;
+        }
+        
+        /* 预览区域显示状态 */
+        .preview-section.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        
+        .preview-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .preview-section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 45px;
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        /* 预览容器 */
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 35px;
+            justify-content: center;
+            margin-bottom: 45px;
+        }
+        
+        /* 图片预览卡片 */
+        .image-preview {
+            flex: 1;
+            min-width: 250px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(35, 35, 35, 0.85) 100%);
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 20px rgba(142, 68, 173, 0.2);
+            animation: fadeInUp 1s ease-out 0.7s both;
+        }
+        
+        .image-preview:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 8px 35px rgba(142, 68, 173, 0.4);
+        }
+        
+        .image-preview h3 {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: #e6c300;
+            text-shadow: 
+                0 0 10px rgba(142, 68, 173, 0.8),
+                0 0 20px rgba(230, 195, 0, 0.6);
+        }
+        
+        /* 预览图片 */
+        .image-preview img {
+            max-width: 100%;
+            max-height: 320px;
+            border-radius: 10px;
+            transition: all 0.4s ease;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            box-shadow: 
+                0 6px 25px rgba(142, 68, 173, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        /* 图片占位符 */
+        .image-preview img[src=""] {
+            display: block;
+            width: 100%;
+            height: 200px;
+            background: 
+                linear-gradient(135deg, rgba(106, 13, 173, 0.2) 0%, rgba(138, 43, 226, 0.2) 100%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffd700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>') center/60px no-repeat;
+            border: none;
+            box-shadow: none;
+        }
+        
+        .image-preview img:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 10px 40px rgba(142, 68, 173, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 已加载图片的样式 */
+        .image-preview img:not([src=""]) {
+            border: none;
+            background: rgba(0, 0, 0, 0.3);
+            height: 200px;
+            object-fit: contain;
+        }
+        
+        /* 图片信息 */
+        .image-info {
+            margin-top: 25px;
+            font-size: 17px;
+            color: #ffd700;
+            line-height: 1.6;
+        }
+        
+        /* 下载区域 */
+        .download-section {
+            text-align: center;
+            margin-top: 45px;
+            padding-top: 45px;
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+        
+        /* 下载按钮 */
+        #downloadBtn {
+            display: inline-block;
+            padding: 22px 45px;
+            background: linear-gradient(135deg, #6a0dad 0%, #8a2be2 100%);
+            color: #ffd700;
+            border: 2px solid #ffd700;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 19px;
+            font-weight: bold;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 0 20px rgba(106, 13, 173, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        #downloadBtn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #8a2be2 0%, #9932cc 100%);
+            transform: translateY(-3px);
+            border-color: #ffed4e;
+            box-shadow: 
+                0 0 35px rgba(106, 13, 173, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        
+        #downloadBtn:disabled {
+            background: linear-gradient(135deg, #333 0%, #444 100%);
+            color: #666;
+            border-color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        #downloadBtn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 消息提示 */
+        .message {
+            margin-top: 30px;
+            padding: 22px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 17px;
+            animation: fadeIn 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 消息图标 */
+        .message::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-block;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        /* 成功消息 */
+        .message.success {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(52, 152, 219, 0.1) 100%);
+            color: #ffd700;
+            border: 1px solid rgba(52, 152, 219, 0.5);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .message.success::before {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>');
+            mask-size: contain;
+            mask-repeat: no-repeat;
+        }
+        
+        /* 错误消息 */
+        .message.error {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2) 0%, rgba(231, 76, 60, 0.1) 100%);
+            color: #ffd700;
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+        }
+        
+        .message.error::before {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>');
+            mask-size: contain;
+            mask-repeat: no-repeat;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .upload-section,
+            .controls-section,
+            .preview-section {
+                width: 100%;
+                max-width: 800px;
+            }
+            
+            .header h1 {
+                font-size: 3rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .header p {
+                font-size: 1.1rem;
+            }
+            
+            .container {
+                padding: 40px 20px;
+            }
+            
+            .upload-section,
+            .controls-section,
+            .preview-section {
+                padding: 30px;
+            }
+            
+            .preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .image-preview {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <!-- 装饰元素 -->
+    <div class="decorations">
+        <div class="decor left">
+            <div class="decor-item"></div>
+            <div class="decor-item"></div>
+            <div class="decor-item"></div>
+        </div>
+        <div class="decor right">
+            <div class="decor-item"></div>
+            <div class="decor-item"></div>
+            <div class="decor-item"></div>
+        </div>
+    </div>
+    
+    <div class="header">
+        <h1>图片压缩工具</h1>
+        <p>快速、高效地压缩您的图片，节省存储空间和加载时间</p>
+    </div>
+    
+    <div class="container">
+        <div class="main-content">
+            <!-- 左侧上传区域 -->
+            <div class="upload-section">
+                <h2>上传图片</h2>
+                <label for="fileInput" class="upload-label"><span>选择图片文件</span></label>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            
+            <!-- 中间控制区域 -->
+            <div class="controls-section">
+                <h2>压缩设置</h2>
+                <div class="quality-control">
+                    <label for="qualitySlider">压缩质量: <span id="qualityValue">80</span>%</label>
+                    <input type="range" id="qualitySlider" min="10" max="100" value="80">
+                </div>
+                <button id="compressBtn"><span>开始压缩</span></button>
+            </div>
+            
+            <!-- 右侧预览和下载区域 -->
+            <div class="preview-section">
+                <h2>预览与下载</h2>
+                <div class="preview-container">
+                    <div class="image-preview">
+                        <h3>原始图片</h3>
+                        <img id="originalImage" src="" alt="原始图片">
+                        <div class="image-info" id="originalInfo"></div>
+                    </div>
+                    <div class="image-preview">
+                        <h3>压缩图片</h3>
+                        <img id="compressedImage" src="" alt="压缩图片">
+                        <div class="image-info" id="compressedInfo"></div>
+                    </div>
+                </div>
+                
+                <div class="download-section">
+                    <a href="" id="downloadBtn" download disabled><span>下载压缩图片</span></a>
+                    <div class="message" id="message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 开发者信息 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>公众号：AwCode</p>
+            <p>邮箱：Avioleter_awcy1120@163.com</p>
+            <p>由TRAE开发</p>
+        </div>
+    </footer>
+    
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const originalImage = document.getElementById('originalImage');
+        const compressedImage = document.getElementById('compressedImage');
+        const originalInfo = document.getElementById('originalInfo');
+        const compressedInfo = document.getElementById('compressedInfo');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const compressBtn = document.getElementById('compressBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const message = document.getElementById('message');
+        
+        let originalFile = null;
+        let compressedDataUrl = null;
+        
+        // 文件选择处理
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            originalFile = file;
+            
+            // 显示原始图片
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalImage.src = e.target.result;
+                originalInfo.textContent = `大小: ${formatFileSize(file.size)}`;
+                
+                // 显示控制区域和预览区域
+                document.querySelector('.controls-section').classList.add('show');
+                document.querySelector('.preview-section').classList.add('show');
+            };
+            reader.readAsDataURL(file);
+            
+            // 重置压缩图片和下载按钮
+            compressedImage.src = '';
+            compressedInfo.textContent = '';
+            downloadBtn.disabled = true;
+            message.textContent = '';
+        });
+        
+        // 质量滑块处理
+        qualitySlider.addEventListener('input', function() {
+            qualityValue.textContent = this.value;
+        });
+        
+        // 下载按钮点击处理
+        downloadBtn.addEventListener('click', function(e) {
+            if (this.disabled) {
+                e.preventDefault(); // 阻止默认下载行为
+                showMessage('请先压缩图片', 'error');
+            }
+        });
+        
+        // 压缩按钮处理
+        compressBtn.addEventListener('click', function() {
+            if (!originalFile) {
+                showMessage('请先选择一张图片', 'error');
+                return;
+            }
+            
+            compressImage();
+        });
+        
+        // 压缩图片函数
+        function compressImage() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                // 设置画布大小与图片一致
+                canvas.width = img.width;
+                canvas.height = img.height;
+                
+                // 绘制图片
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // 获取压缩质量
+                const quality = qualitySlider.value / 100;
+                
+                // 压缩图片
+                canvas.toBlob(function(blob) {
+                    // 显示压缩后的图片
+                    compressedDataUrl = URL.createObjectURL(blob);
+                    compressedImage.src = compressedDataUrl;
+                    compressedInfo.textContent = `大小: ${formatFileSize(blob.size)}`;
+                    
+                    // 更新下载按钮
+                    downloadBtn.href = compressedDataUrl;
+                    downloadBtn.download = `compressed_${originalFile.name}`;
+                    downloadBtn.disabled = false;
+                    
+                    // 显示成功消息
+                    showMessage('图片压缩成功！', 'success');
+                }, 'image/jpeg', quality);
+            };
+            
+            img.src = URL.createObjectURL(originalFile);
+        }
+        
+        // 显示消息函数
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            
+            // 3秒后清除消息
+            setTimeout(function() {
+                message.textContent = '';
+                message.className = 'message';
+            }, 3000);
+        }
+        
+        // 格式化文件大小函数
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+            else return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+    </script>
+</body>
+</html>
